@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Exchange Pro | Real-Time Exchange Rates</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-currency-exchange"></i>
+                <span class="brand-text">Currency<strong>Exchange</strong></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#converter">Converter</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#comparison">Compare</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#charts">Charts</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link rate-update" id="lastUpdate">
+                            <i class="bi bi-clock"></i> <span id="updateTime">Loading...</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background"></div>
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6 hero-content">
+                    <div class="hero-badge">
+                        <i class="bi bi-lightning-charge-fill"></i> Real-Time Rates
+                    </div>
+                    <h1 class="hero-title">
+                        Exchange Currency
+                        <span class="gradient-text">Smarter</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Compare rates across multiple providers, track historical trends, 
+                        and get the best exchange deals in real-time.
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="supportedCurrencies">8+</div>
+                            <div class="stat-label">Currencies</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">6</div>
+                            <div class="stat-label">Providers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">1min</div>
+                            <div class="stat-label">Updates</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <!-- Main Converter Card -->
+                    <div class="converter-card" id="converter">
+                        <div class="card-header-custom">
+                            <h3><i class="bi bi-calculator"></i> Currency Converter</h3>
+                            <button class="btn btn-sm btn-outline-light" id="refreshRates">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                        </div>
+                        
+                        <div class="converter-body">
+                            <!-- Amount Input -->
+                            <div class="mb-4">
+                                <label class="form-label">Amount</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="number" class="form-control amount-input" id="amount" 
+                                           placeholder="Enter amount" value="1000000" step="1000">
+                                </div>
+                            </div>
+
+                            <!-- From Currency -->
+                            <div class="mb-3">
+                                <label class="form-label">From</label>
+                                <select class="form-select form-select-lg currency-select" id="fromCurrency">
+                                    <option value="IDR" selected>🇮🇩 IDR - Indonesian Rupiah</option>
+                                    <option value="USD">🇺🇸 USD - US Dollar</option>
+                                    <option value="EUR">🇪🇺 EUR - Euro</option>
+                                    <option value="GBP">🇬🇧 GBP - British Pound</option>
+                                    <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                                    <option value="SGD">🇸🇬 SGD - Singapore Dollar</option>
+                                    <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                                    <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                                </select>
+                            </div>
+
+                            <!-- Swap Button -->
+                            <div class="text-center my-3">
+                                <button class="btn btn-swap" id="swapCurrencies">
+                                    <i class="bi bi-arrow-down-up"></i>
+                                </button>
+                            </div>
+
+                            <!-- To Currency -->
+                            <div class="mb-4">
+                                <label class="form-label">To</label>
+                                <select class="form-select form-select-lg currency-select" id="toCurrency">
+                                    <option value="USD" selected>🇺🇸 USD - US Dollar</option>
+                                    <option value="IDR">🇮🇩 IDR - Indonesian Rupiah</option>
+                                    <option value="EUR">🇪🇺 EUR - Euro</option>
+                                    <option value="GBP">🇬🇧 GBP - British Pound</option>
+                                    <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                                    <option value="SGD">🇸🇬 SGD - Singapore Dollar</option>
+                                    <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                                    <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                                </select>
+                            </div>
+
+                            <!-- Provider Selection -->
+                            <div class="mb-4">
+                                <label class="form-label">Exchange Provider</label>
+                                <select class="form-select form-select-lg" id="provider">
+                                    <option value="Bank Central">Bank Central</option>
+                                    <option value="Bank Mandiri">Bank Mandiri</option>
+                                    <option value="Bank BCA">Bank BCA</option>
+                                    <option value="Money Changer A">Money Changer A</option>
+                                    <option value="Money Changer B">Money Changer B</option>
+                                    <option value="Airport Exchange">Airport Exchange</option>
+                                </select>
+                            </div>
+
+                            <!-- Convert Button -->
+                            <button class="btn btn-primary btn-lg w-100 btn-convert" id="convertBtn">
+                                <i class="bi bi-arrow-right-circle-fill"></i> Convert Now
+                            </button>
+
+                            <!-- Result Display -->
+                            <div id="resultSection" class="result-section" style="display: none;">
+                                <div class="result-header">
+                                    <h4>Conversion Result</h4>
+                                </div>
+                                
+                                <div class="result-main">
+                                    <div class="result-amount" id="convertedAmount">0.00</div>
+                                    <div class="result-currency" id="resultCurrency">USD</div>
+                                </div>
+
+                                <div class="result-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Exchange Rate</span>
+                                        <span class="detail-value" id="exchangeRate">-</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Converted Amount</span>
+                                        <span class="detail-value" id="grossAmount">-</span>
+                                    </div>
+                                    <div class="detail-row fee-row">
+                                        <span class="detail-label">
+                                            <i class="bi bi-receipt"></i> Service Fee
+                                        </span>
+                                        <span class="detail-value" id="feeAmount">-</span>
+                                    </div>
+                                    <div class="detail-row total-row">
+                                        <span class="detail-label">You Receive</span>
+                                        <span class="detail-value" id="finalAmount">-</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Exchangeable</span>
+                                        <span class="detail-value" id="exchangeable">-</span>
+                                    </div>
+                                    <div class="detail-row remainder-row">
+                                        <span class="detail-label">
+                                            <i class="bi bi-info-circle"></i> Remainder
+                                        </span>
+                                        <span class="detail-value" id="remainder">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section" id="comparison">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-bar-chart-line"></i> Provider Comparison
+                </h2>
+                <p class="section-subtitle">
+                    Find the best exchange rate across all providers
+                </p>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-lg-8 mx-auto">
+                    <button class="btn btn-primary btn-lg w-100" id="compareBtn">
+                        <i class="bi bi-search"></i> Compare All Providers
+                    </button>
+                </div>
+            </div>
+
+            <div id="comparisonResults" style="display: none;">
+                <div class="table-responsive">
+                    <table class="table comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Provider</th>
+                                <th>Rate</th>
+                                <th>Spread</th>
+                                <th>Fee</th>
+                                <th>You Get</th>
+                                <th>Exchangeable</th>
+                                <th>Remainder</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts-section" id="charts">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-graph-up"></i> Historical Trends
+                </h2>
+                <p class="section-subtitle">
+                    Track exchange rate movements over time
+                </p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h4>7-Day Trend</h4>
+                            <p>Values shown as relative change, not absolute exchange rate</p>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary active" data-period="7">7D</button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="chart7days"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h4>30-Day Trend</h4>
+                            <p>Values shown as relative change, not absolute exchange rate</p>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary active" data-period="30">30D</button>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="chart30days"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <h5>Real-Time Rates</h5>
+                        <p>Live exchange rates updated every minute from reliable sources</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h5>Transparent Fees</h5>
+                        <p>Clear breakdown of all fees and charges before conversion</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h5>Historical Data</h5>
+                        <p>Track trends with 7-day and 30-day historical charts</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-award"></i>
+                        </div>
+                        <h5>Best Deals</h5>
+                        <p>Compare providers to find the most competitive rates</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>CurrencyExchange Pro</h5>
+                    <p>Your trusted platform for real-time currency exchange comparison and conversion.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <small>Exchange rates provided by ExchangeRate-API</small>
+                    </p>
+                    <p class="mb-0">
+                        <small>&copy; 2025 CurrencyExchange Pro. All rights reserved.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
