@@ -103,7 +103,7 @@ static/
 ### Step 1: Clone or Download the Project
 
 ```bash
-git clone 
+git clone https://github.com/EriTrn/ExchangeCurrency.git
 cd currency-exchange-app
 ```
 
